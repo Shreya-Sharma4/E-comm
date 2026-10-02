@@ -32,8 +32,12 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Mount Routes
+// Mount Application REST Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/products', require('./routes/productRoutes'));
+app.use('/api/orders', require('./routes/orderRoutes'));
+app.use('/api/admin/orders', require('./routes/adminOrderRoutes'));
 
 // 404 Route Handler
 app.use((req, res, next) => {
