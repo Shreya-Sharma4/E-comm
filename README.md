@@ -202,6 +202,7 @@ Detailed specifications and architectural guides are available in the [`docs/`](
 5. [**UI/UX Design & Layouts** (`docs/UI_UX_DESIGN.md`)](./docs/UI_UX_DESIGN.md) - Wireframes, Tailwind design tokens, responsive breakpoints, and UI states.
 6. [**Demo Flow Guide** (`docs/DEMO_FLOW.md`)](./docs/DEMO_FLOW.md) - Detailed step-by-step walkthrough script for the entire demo workflow.
 7. [**Setup & Installation Guide** (`docs/SETUP_GUIDE.md`)](./docs/SETUP_GUIDE.md) - Environment configurations, seed script guide, and local execution instructions.
+8. [**Task Assignments & Work Breakdown** (`docs/TASK_ASSIGNMENTS.md`)](./docs/TASK_ASSIGNMENTS.md) - Modular 14-task assignment matrix with acceptance criteria.
 
 ---
 
