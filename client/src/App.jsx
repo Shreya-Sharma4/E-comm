@@ -1,17 +1,89 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import MainLayout from './layouts/MainLayout';
+import Products from './pages/Products';
+import ProductDetails from './pages/ProductDetails';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import MyOrders from './pages/MyOrders';
+import Login from './pages/Login';
+import Register from './pages/Register';
+
+// Admin Panel Components
 import { AdminLayout } from './layouts/AdminLayout';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminCategories } from './pages/admin/AdminCategories';
 import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminOrders } from './pages/admin/AdminOrders';
-import { Home } from './pages/Home';
 
 function App() {
   return (
     <Routes>
-      {/* Landing page */}
-      <Route path="/" element={<Home />} />
+      {/* Public Storefront Routes wrapped in MainLayout */}
+      <Route
+        path="/"
+        element={
+          <MainLayout>
+            <Products />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/products"
+        element={
+          <MainLayout>
+            <Products />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/products/:id"
+        element={
+          <MainLayout>
+            <ProductDetails />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/cart"
+        element={
+          <MainLayout>
+            <Cart />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/checkout"
+        element={
+          <MainLayout>
+            <Checkout />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/my-orders"
+        element={
+          <MainLayout>
+            <MyOrders />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <MainLayout>
+            <Login />
+          </MainLayout>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <MainLayout>
+            <Register />
+          </MainLayout>
+        }
+      />
 
       {/* Admin Panel Layout and Nested Routes */}
       <Route path="/admin" element={<AdminLayout />}>
@@ -21,8 +93,8 @@ function App() {
         <Route path="orders" element={<AdminOrders />} />
       </Route>
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/admin" replace />} />
+      {/* Catch-all fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
