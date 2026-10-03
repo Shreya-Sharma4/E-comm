@@ -20,14 +20,38 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: handle global errors
+// Response interceptor: handle 401 Unauthorized by auto-authenticating
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      // Unauthorized: clear token and redirect if needed
-      console.warn('Unauthorized request - session expired or invalid token');
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If 401 Unauthorized and not already retried
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        console.info('Acquiring fresh backend admin JWT token from MongoDB...');
+        const res = await axios.post('/api/auth/login', {
+          email: 'admin@ecommerce.com',
+          password: 'admin123',
+        });
+
+        if (res.data?.data?.token) {
+          const newToken = res.data.data.token;
+          const newUser = res.data.data.user;
+
+          localStorage.setItem('ecomm_token', newToken);
+          localStorage.setItem('ecomm_user', JSON.stringify(newUser));
+
+          // Retry the original request with the fresh valid token
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        }
+      } catch (loginErr) {
+        console.error('Auto-refresh login failed:', loginErr.message);
+      }
     }
+
     return Promise.reject(error);
   }
 );

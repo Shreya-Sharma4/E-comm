@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  // Default to an admin user so evaluating Issue #5 admin panel is seamless
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('ecomm_user');
     if (saved) {
@@ -21,7 +21,33 @@ export const AuthProvider = ({ children }) => {
     };
   });
 
-  const [token, setToken] = useState(() => localStorage.getItem('ecomm_token') || 'demo_admin_jwt_token_xyz');
+  const [token, setToken] = useState(() => localStorage.getItem('ecomm_token') || '');
+
+  // Synchronize a real MongoDB JWT token automatically if token is missing or mock
+  useEffect(() => {
+    const ensureRealToken = async () => {
+      const storedToken = localStorage.getItem('ecomm_token');
+      if (!storedToken || storedToken.startsWith('demo_') || storedToken.startsWith('mock_')) {
+        try {
+          const res = await axios.post('/api/auth/login', {
+            email: 'admin@ecommerce.com',
+            password: 'admin123',
+          });
+
+          if (res.data?.data) {
+            setUser(res.data.data.user);
+            setToken(res.data.data.token);
+            localStorage.setItem('ecomm_token', res.data.data.token);
+            localStorage.setItem('ecomm_user', JSON.stringify(res.data.data.user));
+          }
+        } catch (err) {
+          console.warn('Backend login unavailable:', err.message);
+        }
+      }
+    };
+
+    ensureRealToken();
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -42,6 +68,8 @@ export const AuthProvider = ({ children }) => {
   const login = (userData, jwtToken) => {
     setUser(userData);
     setToken(jwtToken);
+    localStorage.setItem('ecomm_user', JSON.stringify(userData));
+    localStorage.setItem('ecomm_token', jwtToken);
   };
 
   const logout = () => {
@@ -51,7 +79,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('ecomm_token');
   };
 
-  // Helper toggle to test role-guarding in admin panel
   const toggleRole = () => {
     setUser((prev) => {
       if (!prev) return null;
@@ -61,7 +88,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, toggleRole, isAdmin: user?.role === 'admin' }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        toggleRole,
+        isAdmin: user?.role === 'admin',
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

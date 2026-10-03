@@ -110,12 +110,25 @@ exports.createProduct = async (req, res) => {
       });
     }
 
-    // Verify category exists
-    const categoryDoc = await Category.findById(category);
+    // Verify category exists by ObjectId, object, or category name
+    let categoryDoc;
+    if (typeof category === 'string' && category.match(/^[0-9a-fA-F]{24}$/)) {
+      categoryDoc = await Category.findById(category);
+    } else if (typeof category === 'object' && category?._id) {
+      categoryDoc = await Category.findById(category._id);
+    } else {
+      const catSearchName = typeof category === 'object' ? category?.name : category;
+      if (catSearchName && typeof catSearchName === 'string') {
+        categoryDoc = await Category.findOne({
+          name: { $regex: new RegExp(`^${catSearchName.trim()}$`, 'i') },
+        });
+      }
+    }
+
     if (!categoryDoc) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid category: category does not exist',
+        message: 'Invalid category: specified category does not exist in the database',
       });
     }
 
@@ -124,7 +137,7 @@ exports.createProduct = async (req, res) => {
       description: description.trim(),
       price: numPrice,
       image: image.trim(),
-      category,
+      category: categoryDoc._id,
       stock: numStock,
     });
 
@@ -187,14 +200,27 @@ exports.updateProduct = async (req, res) => {
     }
 
     if (category) {
-      const catExists = await Category.findById(category);
+      let catExists;
+      if (typeof category === 'string' && category.match(/^[0-9a-fA-F]{24}$/)) {
+        catExists = await Category.findById(category);
+      } else if (typeof category === 'object' && category?._id) {
+        catExists = await Category.findById(category._id);
+      } else {
+        const catSearchName = typeof category === 'object' ? category?.name : category;
+        if (catSearchName && typeof catSearchName === 'string') {
+          catExists = await Category.findOne({
+            name: { $regex: new RegExp(`^${catSearchName.trim()}$`, 'i') },
+          });
+        }
+      }
+
       if (!catExists) {
         return res.status(400).json({
           success: false,
-          message: 'Invalid category ID',
+          message: 'Invalid category: category does not exist in database',
         });
       }
-      product.category = category;
+      product.category = catExists._id;
     }
 
     const updated = await product.save();
